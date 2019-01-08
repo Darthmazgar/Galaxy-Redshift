@@ -1,0 +1,62 @@
+################################################
+###  WITHOUT SURFACE BRIGHTNESS MODE ###########
+################################################
+######  OBJECT ID  ##############
+IDENT
+#
+######  INFO OBJECT ###########
+Z_REF
+MODEL_REF
+#AGE_REF
+#EBV_REF 
+#ZFOR_REF
+LF_REF
+MAG_REF
+#MABS_REF
+#KCOR_REF
+######  GLOBAL EVOLUTION PARAMETERS #######
+LUM_EVOL
+PHI_EVOL
+ALPHA_EVOL
+#######  MAGNITUDES AND ERRORS WITH NO SB #####
+MAG_REF()
+MAG_RAN()
+ERR_MAG_RAN()
+FLUX_RAN()
+ERR_FLUX_RAN()
+################################################
+###    WITH SURFACE BRIGHTNESS MODE   ##### ####
+################################################
+####### INFO OBJECT  #############
+#RE_REF
+#BABS_REF
+#######  MAGNITUDES AND ERRORS WITH SB #####
+#MAG_ISO()
+#ERR_MAG_ISO()
+#DIAM_ISO()
+#MAG_PSEUDO()
+#ERR_MAG_PSEUDO()
+#DIAM_PSEUDO()
+#MAG_AUTO()
+#ERR_MAG_AUTO()
+#DIAM_AUTO()
+#MAG_PETRO()
+#ERR_MAG_PETRO()
+#DIAM_PETRO()
+#MAG_APER1()
+#ERR_MAG_APER1()
+#DIAM_APER1()
+#MAG_APER2()
+#ERR_MAG_APER2()
+#DIAM_APER2()
+#MAG_APER3()
+#ERR_MAG_APER3()
+#DIAM_APER3()
+#MAG_APER4()
+#ERR_MAG_APER4()
+#DIAM_APER4()
+#MAG_APER5()
+#ERR_MAG_APER5()
+#DIAM_APER5()
+#RE_ARCSEC
+DIST_LUM

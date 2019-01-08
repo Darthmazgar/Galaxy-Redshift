@@ -1,0 +1,270 @@
+# zl  z list 
+zl 
+ ! ls *.spec > SPEC.list
+ define test 0 
+ data "SPEC.list" read { fspec 1.s}
+ do il = 0 , DIMEN(fspec) -1 {
+    define fname (fspec[$il]) 
+    zsp $fname 127 0
+    define test ? { return to continue} 
+ }
+ #######################################################
+# zsp [filename]  [Context:1-127] [0-devx11/1-postscript]
+#   1:Gal || 2:FIR || 4:BC-STOCH  || 8:QSO || 16:STAR || 32:1+2 || 64:4+2
+zsp 3  
+ window 1 1 1 1 
+ define  num     $1    #  File name 
+ define  cont   ($2)   #  Context 
+ define  ps     ($3)   #  PS file or on screen 
+ #
+ ######################################################################
+ # Check the Context  and change the keyword for YES[1]/NO[0]     
+ define  sgal   0           #  GAL  from First library 
+ define  sgalp  0           #  GAL  from PHYSICAL BC STOCHASTIC library 
+ define  sgalf  0           #  GAL  from FIR library 
+ define  sqso   0           #  QSO  library 
+ define  sstar  0           #  STAR library 
+ define  sumpf  0           #  SUM PHYSICAL     + FIR spectra
+ define  sumgf  0           #  SUM GAL (1st ib) + FIR spectra
+ do i = 0, 6 { 
+  # context returns  $bandused=1 if spectrum to be PLOTTED 
+   context $i $cont 
+   if ($i==0 && $bandused==1) {define  sgal  1}
+   if ($i==1 && $bandused==1) {define  sgalf 1}
+   if ($i==2 && $bandused==1) {define  sgalp 1}
+   if ($i==3 && $bandused==1) {define  sqso  1}
+   if ($i==4 && $bandused==1) {define  sstar 1}
+   if ($i==5 && $bandused==1) {define  sumgf 1 }
+   if ($i==6 && $bandused==1) {define  sumpf 1 }
+ } 
+ echo $sgal $sgalf $sgalp $sqso $sstar $sumgf $sumpf 
+ #####################################################################
+ #  INITIALIZE AND OPEN THE FILE 
+ if ( $ps == 1 ) { device postencap $num.ps }else{device x11}
+ define TeX_strings 1
+ ltype 0 ctype default lweight 2 expand 1.01 
+ # 
+ data $num
+ ##############################################################
+ ##########  ID + Z +FILT + PDF  ##############$
+ # 1st row 
+ define IDENT READ  2 1 
+ define ZSPEC READ  2 2
+ define ZPHOT READ  2 3
+ #echo ID=$IDENT zspec=$ZSPEC zphot=$ZPHOT 
+ # 2nd row 
+ define NFILT READ  4 2 
+ # 3rd row 
+ define NPDF  READ  6 2 
+ #echo Nfilt=$NFILT  Npdf=$NPDF 
+ ##############################################################
+ #######  READ VALUES FROM ALL MODELS ################  
+ # 9-13 rows 
+  lines 8 13
+  read {type 1.s nline 2.d model 3.d lib 4.d nband 5.d zphot 6 zinf 7 zsup 8 \
+        chi 9 pdf 10 \
+        extlaw 11.d ebv 12 lir 13  age 14  mass 15 sfr 16 ssfr 17 }
+ # print {type nline  model chi}
+ ##############################################################
+ ######  READ OBSERVED MAG + ERRORS + FILTERS + PREDICTED GAL MAG  #######################
+ # 14 - (Nfilt+13)  rows : Mag + emag + Filter-Lbeff Filter-DLbda  + Mag-Gal Mag-FIR Mag-BC07
+ lines 14 $(14+$NFILT-1) read { mag 1 em 2 lf 3 dlf 4 mmod 5 mfir 6 mphys 7 }
+ #  CONVERT MAG(AB) in  Log Flux (microJy)
+ set mmod =(mmod<=0  || mmod>35)  ? -10. : (-0.4*(mmod-23.91)) 
+ set mphys=(mphys<=0 || mphys>35) ? -10. : (-0.4*(mphys-23.91))
+ set mfir =(mfir<=0  || mfir>35)  ? -10. : (-0.4*(mfir-23.91)) 
+ ##############################################################
+ ###### READ PDF   ###############
+ if ($NPDF>0) {
+   lines $(14+$NFILT) $(14+$NFILT+$NPDF-1) read {zpdf 1 pdf 2}
+ }
+ ##############################################################
+ ######    READ SPECTRA  [ Lambda(A)   Mag(AB) ]   #############
+ ######  convert in lg(fnu(micJy)) = -0.4*(mab-23.91)       ####
+ ######   GAL-1 
+ if ($(nline[0])>0) {
+    define nrinf (14+$NFILT+$NPDF)
+    define nrsup ($nrinf+$(nline[0])-1) 
+    lines $nrinf $nrsup   read { lg1 1  mg1 2 }
+    set lg1 = lg1/10000.
+    set mg1 = (mg1>35) ? -10. : (-0.4*(mg1-23.91))  
+ }
+ ######   GAL-2nd peak  
+ if ($(nline[1])>0) {
+    define nrinf (14+$NFILT+$NPDF+$(nline[0]))
+    define nrsup ($nrinf+$(nline[1])-1) 
+    lines $nrinf $nrsup   read { lg2 1  mg2 2 }
+    set lg2 = lg2/10000.
+    set mg2 = (mg2>35) ? -10. : (-0.4*(mg2-23.91))  
+ }
+ ######   GAL-FIR 
+ if ($(nline[2])>0) {
+    define nrinf (14+$NFILT+$NPDF+$(nline[0]+nline[1]))
+    define nrsup ($nrinf+$(nline[2])-1) 
+    lines $nrinf $nrsup   read { lg3 1  mg3 2 }
+    set lg3 = lg3/10000.
+    set mg3 = (mg3>35) ? -10. : (-0.4*(mg3-23.91))  
+ }
+ ######   GAL-STOCH
+ if ($(nline[3])>0) {
+    define nrinf (14+$NFILT+$NPDF+$(nline[0]+nline[1]+nline[2]))
+    define nrsup ($nrinf+$(nline[3])-1) 
+    lines $nrinf $nrsup   read { lg4 1  mg4 2 }
+    set lg4 = lg4/10000.
+    set mg4 = (mg4>35) ? -10. : (-0.4*(mg4-23.91))  
+ }
+ ######  QSO
+ if ($(nline[4])>0) {
+    define nrinf (14+$NFILT+$NPDF+$(nline[0]+nline[1]+nline[2]+nline[3]))
+    define nrsup ($nrinf+$(nline[4])-1) 
+    lines $nrinf $nrsup   read { lg5 1  mg5 2 }
+    set lg5 = lg5/10000.
+    set mg5 = (mg5>35) ? -10. : (-0.4*(mg5-23.91))  
+ }
+ ######  STAR 
+ if ($(nline[5])>0) {
+    define nrinf (14+$NFILT+$NPDF+$(nline[0]+nline[1]+nline[2]+nline[3]+nline[4]) )
+    define nrsup ($nrinf+$(nline[5])-1) 
+    lines $nrinf $nrsup   read { lg6 1  mg6 2 }
+    set lg6 = lg6/10000.
+    set mg6 = (mg6>35) ? -10. : (-0.4*(mg6-23.91))  
+ }
+ ##############################################################
+ ##########    PREPARE LIMITS WINDOW    #########
+ set em=em*2
+ set dlf=dlf/2
+ #set mag2 = mag if (mag>0 && mag<35 && em>0)
+ set mag2 = mag if (mag>0 && mag<35 && em>-3)
+ vecminmax mag2 min max  define min ($min-4)  define max ($max+2)
+ if ($max>60) {define max 30}
+ # limits for lambda
+ vecminmax lf lmin lmax
+ define lmin (lg($lmin/2))
+ define lmax (lg($lmax*5))
+ # lg(fnu): mab=-2.5lg(fnu(micJy))+23.91->lg(fnu(micJy))=-0.4*(mab-23.91)  
+ #######  WINDOW   ################
+ ticksize -1 10 0 0 
+ erase ctype default
+ limits $($lmin-4) $($lmax-4) $(-0.4*($max-23.91)) $(-0.4*($min-23.91))
+ box 
+ ctype default expand 1.5 xlabel \lambda (\mu m)
+ ylabel Log [ F_{\\nu} \mu Jy]
+ ##############################################################
+ #######  PLOT  MAGs + ERRORS OBSERVED ###########
+ ptype 20 3 expand 2 ctype default 
+ points    (lg(lf/10000)) (-0.4*(mag-23.91))
+ errorbar  (lg(lf/10000)) (-0.4*(mag-23.91)) (dlf/ln(10)/lf) 1
+ errorbar  (lg(lf/10000)) (-0.4*(mag-23.91)) (dlf/ln(10)/lf) 3 
+ 
+ set lf2=(lg(lf/10000)) if (em >= 0)  
+ set m2=mag if (em >= 0)  
+ set em2=0.4*em if (em >= 0)  
+ errorbar  lf2 (-0.4*(m2-23.91)) em2 2 
+ errorbar  lf2 (-0.4*(m2-23.91)) em2 4
+
+ set lf2=(lg(lf/10000)) if (em < 0)  
+ set m2=(-0.4*(mag-23.91)) if (em < 0)  
+ define dim (DIMEN(lf2))
+ if ($dim > 0 ) { vfield lf2 m2 3 -90 }
+ ### PLOT MODEL MAGNITUDES 
+ # ptype 10 0 expand 1 ctype red      points  (lg(lf/10000)) mmod
+ # ptype 4 0  expand 1  ctype blue    points  (lg(lf/10000)) mphys
+ # ptype 3 0  expand 1 ctype magenta  points  (lg(lf/10000)) mfir
+
+ ##############################################################
+ #########  PLOT SPECTRA   ############
+ # read {type 1.s nline 2.d model 3.d lib 4.d nband 5 zphot 6 zinf 7 zsup 8 \
+ #       chi 9 pdf 10 extlaw 11.d ebv 12 lir 13 age 14 mass 15 sfr 16 ssfr 17 }
+ expand 1.01 window 1 1 1 1 ctype default 
+ define Zspec  (sprintf('%8.4f',$ZSPEC))
+ relocate (6000 31300) label ID : $IDENT , Z_{spec}=$Zspec
+ relocate (4000 30000)
+ define ly (30000)
+ label Type Model Lib Nband \chi^2  Z  ELaw E(B-V) Lir Age SFR Mass
+
+ do i = 0,5 {
+    if (chi[$i]<10000){ define chi2 (sprintf('%6.2f',chi[$i]))}else{define chi2 (sprintf('%9.6e',chi[$i])) }
+    define zph  (sprintf('%6.2f',zphot[$i]))
+    define extl (sprintf('%2d',extlaw[$i]))
+    define ebv  (sprintf('%6.2f',ebv[$i]))
+    define ltir (sprintf('%6.2f',lir[$i]))
+    define lage (sprintf('%6.2f',age[$i]))
+    define mass (sprintf('%6.2f',mass[$i]))
+    define sfr (sprintf('%6.2f',sfr[$i]))
+ 
+    if ($i==0 && $sgal==1  && nline[0]>0){ctype red      connect (lg(lg1)) mg1   define ly ($ly - 1000) } 
+    if ($i==1 && $sgal==1  && nline[1]>0){ctype yellow   connect (lg(lg2)) mg2   define ly ($ly - 1000) }
+    if ($i==2 && $sgalf==1 && nline[2]>0){ctype magenta  connect (lg(lg3)) mg3   define ly ($ly - 1000) }
+    if ($i==3 && $sgalp==1 && nline[3]>0){ctype blue     connect (lg(lg4)) mg4   define ly ($ly - 1000) }
+    if ($i==4 && $sqso==1  && nline[4]>0){ctype green    connect (lg(lg5)) mg5   define ly ($ly - 1000) }
+    if ($i==5 && $sstar==1 && nline[5]>0){ctype cyan     connect (lg(lg6)) mg6   define ly ($ly - 1000) } 
+    relocate (4000 $ly)
+    if ($i==0 && $sgal==1  && nline[0]>0){label $(type[$i]) $(model[$i]) $(lib[$i]) $(nband[$i]) $chi2 $zph $extl $ebv $ltir $lage $sfr $mass}
+    if ($i==1 && $sgal==1  && nline[1]>0){label $(type[$i]) $(model[$i]) $(lib[$i]) $(nband[$i]) $chi2 $zph $extl $ebv $ltir $lage $sfr $mass}
+    if ($i==2 && $sgalf==1 && nline[2]>0){label $(type[$i]) $(model[$i]) $(lib[$i]) $(nband[$i]) $chi2 $zph $extl $ebv $ltir $lage $sfr $mass}
+    if ($i==3 && $sgalp==1 && nline[3]>0){label $(type[$i]) $(model[$i]) $(lib[$i]) $(nband[$i]) $chi2 $zph $extl $ebv $ltir $lage $sfr $mass}
+    if ($i==4 && $sqso==1  && nline[4]>0){label $(type[$i]) $(model[$i]) $(lib[$i]) $(nband[$i]) $chi2 $zph $extl $ebv }
+    if ($i==5 && $sstar==1 && nline[5]>0){label $(type[$i]) $(model[$i]) $(lib[$i]) $(nband[$i]) $chi2 }
+ }
+
+    if ($sumgf==1 && nline[2]>0 && nline[0]>0){ctype red  lweight 4 
+        set l = -1,4,.001  set l=10**l  interp2 lg1 mg1 l mg1i
+        interp2 lg3 mg3 l mg3i
+        connect (lg(l)) (lg(10**mg1i+10**mg3i))  lweight 2 }
+
+    if ($sumpf==1 && nline[2]>0 && nline[3]>0){ctype blue lweight 4 
+        set l = -1,4,.001  set l=10**l  interp2 lg3 mg3 l mg3i 
+        interp2 lg4 mg4 l mg4i
+        connect (lg(l)) (lg(10**mg4i+10**mg3i)) lweight 2 }
+
+ 
+ ##############################################################
+ ###########  PLOT PDF  ###################
+ if ($NPDF>0)  { ticksize 0 0 0 0 
+  expand 1.01 window 2 3 2 1 
+  vecminmax pdf pmin pmax  ctype default 
+  if ($pmax>0)   {
+  if (chi[0]<1e9){ set pdf=pdf / $pmax 
+  set test= zpdf if (pdf>=0.001) 
+  vecminmax test tmin tmax define tmax ($tmax+0.5)
+  define tmin ($tmin-0.5) if ($tmin<0) { define tmin 0}
+  limits $tmin $tmax -0.1 1.1
+  ctype default expand 0.8  box 0 0 1 2
+  ctype red connect zpdf pdf if (zpdf>0)
+  expand 1.01 ctype default 
+  set x=zphot[0] set y=0.5 set zi=x-zinf[0] set zs=zsup[0]-x
+  ctype default points x y errorbar x y zi 3  errorbar x y zs 1
+	ctype default  
+		 }else{ 
+   set tmp=pdf if(pdf>0) 
+   vecminmax tmp pmin pmax  
+   define pmax ($pmin + 50)
+   limits 0 6 0 $pmax 
+   ctype default expand 0.8  box 0 0 1 2
+   ctype red  connect zpdf pdf
+   expand 1.01 ctype default 
+   set x=zphot[0] set y=$pmin+25 set zi=x-zinf[0] set zs=zsup[0]-x
+   ctype default points x y errorbar x y zi 3  errorbar x y zs 1
+		  }}}
+		 
+ ##############################################################
+ ###########  WRITE   INFO   #################
+ expand 1.01 window 1 1 1 1 ctype default 
+ define Zspec  (sprintf('%8.4f',$ZSPEC))
+ relocate (6000 31300) label ID : $IDENT , Z_{spec}=$Zspec
+ relocate (4000 30000)
+ label Type Model Lib Nband \chi^2  Z  ELaw E(B-V) Lir Age SFR Mass
+
+ ##############################################################
+ ##############################################################
+ ###########
+# context:  (n, context)   return if band n used in Context 
+context 2 
+  define bandused 0 
+  define nc   ($1) 
+  define sum ($2)
+  do ic = 6,0,-1 {
+     if (($sum-2**($ic))>=0. && $ic>$nc)  { define sum ($sum-2**$ic) }
+     if (($sum-2**($ic))>=0. && $ic==$nc) { define bandused 1}
+     if (($sum-2**($ic))<0  && $ic==$nc)  { define bandused 0 }
+  }

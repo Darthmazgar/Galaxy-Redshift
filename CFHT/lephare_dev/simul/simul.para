@@ -1,0 +1,112 @@
+#
+############################################################################
+################  CREATION OF LIBRARIES FROM SEDs List #####################
+############################################################################
+#
+#----------------  GALAXY LIBRARY (ASCII or BINARY SED)--------------
+#
+GAL_SED		$LEPHAREDIR/sed/GAL/CE/CE_MOD.list 	# SEDs list 
+GAL_FSCALE	1.					# Flux Scale
+#SEL_AGE 	$LEPHAREDIR/sed/GAL/HYPERZ/AGE_GISSEL_ALL.dat # List of Age for GISSEL
+GAL_LIB		LIB_CE					# Binary GAL LIBRARY (in lib_bin/)
+# 
+############################################################################
+######################## CREATION OF FILTERS ###############################
+############################################################################
+#
+TRANS_TYPE	0			# TRANSMISSION TYPE 0:Energy, 1:Nb of photons
+FILTER_LIST wfi/U.pb,wfi/B.pb,wfi/V.pb,wfi/R.pb,wfi/I.pb,ntt/J.pb,ntt/Ks.pb # (in  filt/)
+FILTER_FILE	filter_d2c.dat		# name of file with filters
+#
+############################################################################
+###################  CREATION OF MAGNITUDE LIBRARIES #######################
+############################################################################
+#
+#------------------ GALAXY LIBRARY --------------------------
+# 
+GAL_LIB_IN	LIB_CE			# Input GALAXY LIBRARY
+GAL_LIB_OUT	CE_D2c			# Output GALAXY LIBRARY
+#
+#------------------ MAG + Z_STEP + COSMO + EXTINCTION -------------
+#
+MAGTYPE         AB			# Magnitude type (AB or VEGA)
+Z_STEP 		0.02,6.,0.1 		# dz, zmax, dz (if zmax>6) 
+COSMOLOGY	70,0.3,0.7		# H0, om0,lambda0	
+#Z_FORM 	10,10,10,10,10,5,5,5 	        # z of formation for each SEDs
+EXTINC_LAW	calzetti.dat		# (in  ext/)
+MOD_EXTINC 	0,0			# model range for extinction 
+EB_V            0.,0.05,0.1,0.2,0.3	# E(B-V) (max 50 values)
+#
+#------------------ ASCII OUTPUT FILES ----------------------------
+#
+LIB_ASCII       NO		# Writing also an ASCII file in current dir.
+#
+#############################################################################
+#############################   SIMULATION    ###############################
+#############################################################################
+#
+###################   SIMULATION PROPERTIES  ################################
+#
+#-----------      Galaxy types included in the LF types       ---------------
+LF_FILE		$LEPHAREDIR/simul/LF_type_CE.dat	# File with LF type  
+#
+#-----------         Luminosity Function parameters          ----------------
+LF_REF		4		           # Filter Num. for the LF  Ref. 
+M_STAR		-20.36,-20.23,-19.64       # Mstar(AB,@z=0,h=1), per LF type
+PHI_STAR	14.77e-3,13.61e-3,6.52e-3  # Phistar (@z=0,h=1), per LF type 
+ALPHA		0.11,-0.73,-1.64           # alpha   (@z=0)    , per LF type
+LF_EVOL		$LEPHAREDIR/simul/LF_evol_CE.dat	# LF evol (AB & h=1) / or NONE
+LF_PROFILE	4,1,1			   # 4:de Vaucouleur / 1:exponentiel
+#-----------              Redshift evolution                -----------------
+ETAL_EVOL	0		 	  # L(z)=L*.(1+z)^-etal
+ETAP_EVOL	0		          # Phi(z)=Phi*.(1+z)^etap
+ETAS_EVOL	0		          # alpha(z)=alpha*log((1+z)^etas)
+ZETA_EVOL	0			  # re(z) = re(z=0).(1+z)^zeta
+#
+#-----------      Band used for apparent galaxy counts     ------------------
+MAG_REF		4			  # Filter Num. for the magnitude Ref. filter
+MAG_LIMIT	14,27		          # MAG INF - MAG SUP in AB for MAG_REF  Filter
+Z_LIMIT		6		          # Z MAX for SIMUL
+#
+#-----------                   Random number 
+DUMMY_INT	-1975622		  # Dummy integer (negative)
+#
+###################   OUTPUT INFOS  #########################################
+#
+SIGMA_UPLIM	1.				# Sigma for UPPER-LIMITS
+AREA_SIM	0.01				# SIMULATED AREA in sq.deg.
+OUTPUT_FILE	$LEPHAREDIR/simul/simul.out	# Name of the output file
+PARA_OUT	$LEPHAREDIR/simul/simul_output.para # Ouput parameters (full path)
+#
+###################   OPTION FOR OBSERVED QUANTITIES  #######################
+#
+SB_EFFECT	YES			# Surface brightness included [yes/no] 
+#------------- B filter for Mabs-Re relation conversion 
+FILT_B		2			# Filter Num. for the B Filter  
+#-------------  INPUT FILE           --------------------------------
+CONV_FILE	$LEPHAREDIR/simul/prof_psf.dat	# Convolution profiles 
+#
+#-------------  OBSERVED CONDITIONS --------------------------
+SEEING		1.0,1.0,1.0,1.0,1.0,.8,.8	   # seeing  (arcsec)
+SB_LIM		26.8,27.2,26.2,26.2,25.2,24.0,23.2 # 1-sig SB (mag_AB/arcsec2)
+DMIN	  	0.8,0.8,0.8,0.8,1.,1.,1.	   # min diam (frac. of seeing)
+#
+###################   OUTPUT MAGNITUDE PROPERTIES ###########################
+PSEUDO_RAD	1.6		# RADIUS for PSEUDO-ISO MAG (k x ISO_radius)  
+AUTO_RAD	2.5		# RADIUS for AUTO MAG (k x kron_radius)  
+#ETA_PETRO	0.2		# eta parameter [eta=SB(tp)/<SB(t<tp)>]
+#APER_DIAM	2.,3.		# APERTURES DIAMETERS (arcsec) (< 5 values)
+#
+###################   ERROR  CHARACTERISTICS  ##############################
+#
+#-------------        Behaviour of the errors per bands       -----------------
+ERROR_FILE	$LEPHAREDIR/simul/err_mag_d2c.dat	 # files with mag_AB vs errors behaviours
+#
+#-------------      For SExtractor's kind of  Errors only        --------------
+#
+SEX_ERROR	NO	# type of errors (YES: SEXtractor, NO:uses ERROR_FILE) 
+ZP_OBS		21.6,24.3,23.9,24.2,23.2,23.0,22.2	   # Observed ZP (VEGA)
+GAIN		180000,50000,19000,19000,53000,27500,33000 # Gain [e-/adu]
+FUGE_FACTOR	1.,1.,1.,1.,1.,1.,1.		           # Fuge Factor 
+PIXEL_SCALE	0.24,0.24,0.24,0.24,0.24,0.29,0.29	   # PIXEL SIZE (arcsec)
+#

@@ -1,0 +1,154 @@
+# zsp [filename]  [nb spec:1-7] [0-devx11/1-postscript]
+zsp 3  
+ window 1 1 1 1 
+ #define num ? { Enter Name } 
+ #define fnum  (sprintf('%6.6d',$num))
+ define num   $1
+ define plsp ($2)
+ define ps   ($3)
+ define  sgal 0
+ define  sqso 0
+ define  sstar 0
+ if ($plsp==1 || $plsp==3 || $plsp==5 || $plsp==7) {define sgal 1 }
+ if ($plsp==2 || $plsp==3 || $plsp==6 || $plsp==7) {define sqso 1 }
+ if ($plsp==4 || $plsp==5 || $plsp==6 || $plsp==7) {define sstar 1}
+ define TeX_strings 1
+ ltype 0
+ if ( $ps == 1 ) { device postencap $num.ps }else{device x11}
+ data $num
+ define Nfilt READ  1 1 
+ define Zspec READ  1 2  
+ define Nfilt ($Nfilt + 1) 
+ lines 2 $Nfilt read { mag 1 em 2 lf 3 dlf 4 ab 5}
+ set dlf=dlf/2
+ # limits for mag 
+ set mag2 = mag if (mag>0 && mag<35 && em>0)
+ vecminmax mag2 min max  define min ($min-2)  define max ($max+1)
+ if ($max>60) {define max 30}
+ # limits for lambda
+ vecminmax lf lmin lmax
+ define lmin (lg($lmin/1.1))
+ define lmax (lg($lmax*1.1))
+ # define lmax (lg($lmax+2000))
+ ticksize -1 10 0 0 
+ erase ctype default limits $lmin $lmax $max $min box 
+ ctype default expand 1.5 xlabel \lambda (\AA)
+ ylabel mag_{AB}
+ ptype 20 3 expand 2 ctype default 
+ points (lg(lf)) mag 
+ errorbar  (lg(lf)) mag (dlf/ln(10)/lf) 1  errorbar  (lg(lf)) mag (dlf/ln(10)/lf) 3 
+
+ set lf2=(lg(lf)) if (em >= 0)  
+ set m2=mag if (em >= 0)  
+ set em2=em if (em >= 0)  
+ errorbar  lf2 m2 em2 2 
+ errorbar  lf2 m2 em2 4
+
+ set lf2=(lg(lf)) if (em < 0)  
+ set m2=mag if (em < 0)  
+
+ define dim (DIMEN(lf2))
+ if ($dim > 0 ) { vfield lf2 m2 5 -90 }
+ expand 1.2 
+ define Nfilt ($Nfilt + 1) 
+ define nzg READ  $Nfilt  1
+ echo Zspec = $Zspec 
+ define ncol 1
+ do i = 1 , $nzg  {  define ncol ($ncol+1)  
+  define z$i READ  $Nfilt $ncol
+  if ($i == 1) {
+  define ncol ($ncol+1)  define zi$i    READ  $Nfilt $ncol
+  define ncol ($ncol+1)  define zs$i    READ  $Nfilt $ncol
+		}
+  define ncol ($ncol+1)  define chig$i  READ  $Nfilt $ncol
+  define ncol ($ncol+1)  define pdz$i   READ  $Nfilt $ncol
+  define ncol ($ncol+1)  define absg$i  READ  $Nfilt $ncol
+  define ncol ($ncol+1)  define mod$i   READ  $Nfilt $ncol
+  define ncol ($ncol+1)  define age$i   READ  $Nfilt $ncol
+  define ncol ($ncol+1)  define exti$i  READ  $Nfilt $ncol
+
+ echo zgal=$z$i    Iabs=$absg$i  chi=$chig$i      Pdz=$pdz$i
+ echo mod=$mod$i   Age=$age$i    E(B-V)=$exti$i
+		 } 
+ define Nfilt ($Nfilt + 1) 
+ define zq    READ  $Nfilt 1 
+ define chiq  READ  $Nfilt 2
+ define absq  READ  $Nfilt 3	
+ define modq  READ  $Nfilt 4	
+ define mods  READ  $Nfilt 5 
+ define chis  READ  $Nfilt 6
+ echo zqso=$zq   $chiq
+ echo star : $mods $chis   
+ define Nfilt ($Nfilt + 1) 
+ lines $Nfilt 30000 
+ if ($nzg==1) {read { z 1 pdz 2 lq 3 fq 4 ls 5 fs 6 lg1 7 fg1 8}}else{
+           read { z 1 pdz 2 lq 3 fq 4 ls 5 fs 6 lg1 7 fg1 8 lg2 9 fg2 10}}
+
+ if ($sgal==1)  {ctype red  ltype 0 connect (lg(lg1)) fg1 if (lg1>1000)}
+ if ($sstar==1) {ctype blue ltype 0 connect (lg(ls)) fs if (ls>1000)}
+ if ($sqso==1)  {ctype green ltype 0 connect (lg(lq)) fq  if (lq>1000)}
+
+ ltype 0 
+ if ($nzg >=2 ) { ctype magenta connect (lg(lg2)) fg2  if (lg2>1000) }
+
+ if ($sgal==1)  { ticksize 0 0 0 0 
+  window 2 3 2 1 
+  vecminmax pdz pmin pmax  ctype default 
+  if ($pmax>0) {
+  if ($chig1<1e9) { set pdz=pdz / $pmax 
+  set test= z if (pdz>=0.001) 
+  vecminmax test tmin tmax define tmax ($tmax+0.5)
+  define tmin ($tmin-0.5) if ($tmin<0) { define tmin 0}
+  limits $tmin $tmax -0.1 1.1 box 0 0 1 0  ctype red connect z pdz if (z>0)
+  set x = $z1 set y = 0.5 set zi = x - $zi1 set zs = $zs1 - x
+  ctype default points x y errorbar x y zi 3  errorbar x y zs 1
+	ctype default  
+		  }else{ 
+   set tmp=pdz if(pdz>0) 
+   vecminmax tmp pmin pmax  
+   define pmax ($pmin + 20)
+   limits 0 6 0 $pmax ctype default box 0 0 1 0  ctype red  connect z pdz
+   set x = $z1 set y = $pmin + 10 set zi = x - $zi1 set zs = $zs1 - x
+  ctype default points x y errorbar x y zi 3  errorbar x y zs 1
+		 } 
+		}
+		}
+
+ window 1 1 1 1 ctype default 
+ define Zspec  (sprintf('%6.3f',$Zspec))
+ relocate (6000 31300) label ID : $num , Z_{spec}=$Zspec
+ relocate (4000 30000)
+ label Type / Z  / Mag_{abs} /  \chi^2 /Model/Age[Gyr]/E(B-V)/PdZ
+ define z1f     (sprintf('%6.2f',$z1))
+ define absg1f  (sprintf('%6.1f',$absg1))
+ define chig1f  (sprintf('%8.3g',$chig1))
+ define mod1f   (sprintf('%d',$mod1))
+ define age1f   (sprintf('%6.3f',$age1/1.e9))
+ define ebv1f   (sprintf('%4.2f',$exti1))
+ define pdz1f  (sprintf('%5.1f',$pdz1))
+ if ($sgal==1)  {
+  ctype red relocate (4000 28000)
+  label Gal   $z1f $absg1f $chig1f $mod1f $age1f $ebv1f $pdz1f
+  if ($nzg>1) {
+  define z2f    (sprintf('%6.2f',$z2))
+  define absg2f (sprintf('%6.1f',$absg2))
+  define chig2f (sprintf('%8.3g',$chig2))
+  define mod2f  (sprintf('%d',$mod2))
+  define age2f  (sprintf('%6.3f',$age2/1.e9))
+  define ebv2f  (sprintf('%4.2f',$exti2))
+  define pdz2f  (sprintf('%5.1f',$pdz2))
+  ctype magenta relocate (4000 27000)
+  label Gal2  $z2f $absg2f $chig2f $mod2f $age2f $ebv2f $pdz2f
+	      }
+		}
+ define zq   (sprintf('%6.2f',$zq))
+ define absq (sprintf('%6.1f',$absq))
+ define chiq (sprintf('%8.3g',$chiq))
+ define modq (sprintf('%d',$modq))
+ if ($sqso==1)  { ctype green  relocate (4000 26000)
+ label QSO  $zq $absq $chiq $modq}
+  define chis  (sprintf('%8.3g',$chis))
+ if ($sstar==1)  {  ctype blue relocate (4000 25000) 
+	label STAR   ---   --- $chis  $mods }
+ ctype default ltype 0  
+ if ( $ps == 1 ) { device x11} 

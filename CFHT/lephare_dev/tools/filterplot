@@ -1,0 +1,40 @@
+#! /bin/ksh 
+#  filter plot 
+#  Input parameter :$1 :  file name
+ file=$1
+ outf=${file%%.dat}.ps
+ echo input : ${file}     , output : ${outf}
+# awk 'NR>2 && $1>=20 {print }' ${file} > temp
+ cp ${file} temp
+ awk '$1=="#" && NF>= 3 {print $3}' ${file} > temp0
+ function plot { 
+  { 
+  echo ' device postlandfile plot.ps '
+  echo ' define TeX_strings 1 '
+  echo '  data temp read { l 1 t 2 f 3} '
+  echo ' data temp0 read {nam 1.s} '
+#  echo ' set l = lg(l) limits l -0.05 105 erase box xlabel Log[\lambda (\AA)] '
+  echo ' set l = lg(l) limits l -0.05 1.05 erase box xlabel Log[\lambda (\AA)] '
+#  echo ' limits l -0.05 1.05 erase box xlabel \lambda (\AA) '
+  echo ' ylabel Transmission '
+  echo ' vecminmax f f0 f1   '
+  echo ' do i = $f0 , $f1 { '
+  echo 'if (($i-INT($i/2)*2)==0){ctype red define lyl 1.06 }else{ctype default define lyl 1.02 }'
+#  echo 'if (($i-INT($i/2)*2)==0){ctype red define lyl 105 }else{ctype default define lyl 100 }'
+  echo ' set lo = l  if (f==$i) set to = t  if (f==$i) '
+  echo ' vecminmax to ti tm set to = to / $tm'
+#  echo '  vecminmax to ti tm  if ($tm<=1) {set to = to*100}'
+  echo ' connect lo to  '
+  echo ' sort { to lo} define llbd ( lo[DIMEN(lo)-1])  '
+  echo ' define name (nam[$i-1])    '
+  echo ' relocate $llbd $lyl  '
+  echo ' label $name   } '
+#  echo ' hardcopy'
+   } | `whence sm`
+                    } 
+ plot
+ mv plot.ps ${outf}
+ \rm temp temp0
+ gv -a4 ${outf} & 
+#end of script
+
