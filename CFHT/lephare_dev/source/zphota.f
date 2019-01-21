@@ -2131,7 +2131,7 @@ c             pweight=nzpriorVVDS5(iab,model,z)
 cccccccccccccccccccccccccccccccccccccccccc
 c  Add Emission line flux to mag based on UVabs if restframe (NUV-r)<4
          if(nlib.eq.1.and.addem(1:1).eq.'Y') then 
-           if (nuvr.le.4 ) then 
+          if (nuvr.le.4 ) then 
             do k = 1,imagm
                 em(k)=em(k)*10**(-0.4*(mabsuv+20))
             enddo
@@ -2198,9 +2198,9 @@ c         Subtract the flux which is expected from the emi. lines to the observe
             enddo
             dm=dmmi
           else
-            do k= 1,imagm
-              em(k) =0
-            enddo   
+            do k = 1,imagm
+              em(k)=0
+            enddo
           endif
          endif
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -2221,7 +2221,7 @@ c Measurement of chi^2
          do k = 1, imagm
             chi2_fl(k)=-99.9 
             if (bused(k).eq.1  .and. sab(k).gt.0) then
-               if(nlib.eq.1.and.addem(1:1).eq.'Y' .and. nuvr.le.4)then
+               if(nlib.eq.1.and.addem(1:1).eq.'Y'.and.nuvr.le.4)then
                   chi2=chi2+((ab(k)-em(k)-dm*mag(k))/sab(k))**2
                else
                   chi2=chi2+((ab(k)-dm*mag(k))/sab(k))**2
