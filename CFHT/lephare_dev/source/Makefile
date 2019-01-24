@@ -31,8 +31,8 @@
 #LIBS       = 
 #
 #######         For Linux              #########
-#FC         = gfortran
-FC         = g77
+FC         = gfortran
+#FC         = g77
 FFLAGS     = -O5 -Wall 
 LIBS       = 
 #LIBS       = -lg2c -lm
