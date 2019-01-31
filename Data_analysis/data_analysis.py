@@ -1,15 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.stats import f as f_stats
 
 
 def read_data(data='Data/zphot.out'):  # zphot.out, 2SLAQ_Original.txt
     return np.genfromtxt(data)
-
-
-def one_sigma_scatter(z_phot, z_spec):
-    # sigma = np.sqrt(np.average((z_phot - z_spec)**2))
-    sigma = np.sqrt((z_phot - z_spec)**2)
-    return sigma
 
 
 def bias(z_phot, z_spec):
@@ -17,19 +12,38 @@ def bias(z_phot, z_spec):
     return z_phot - z_spec
 
 
+def sigma_z(z_phot, z_spec):
+    # sigma = np.sqrt(np.average((z_phot - z_spec)**2))
+    sigma = np.sqrt((z_phot - z_spec)**2)
+    return sigma
 
 
-def plot_sig_photoz(sigma, z_phot, n_data_sets=1):
+def sigma_z2(z_phot):
+    mean = np.average(z_phot)
+    # return np.sqrt(np.average((z_phot - mean)**2))
+    return np.sqrt((z_phot - mean)**2)
+
+
+def sigma_z3(z_spec):
+    mean = np.average(z_spec)
+    # return np.sqrt(np.average((z_spec - mean)**2))
+    return np.sqrt((z_spec - mean)**2)
+
+
+def plot_sig_photoz(sigma, z_spec, n_data_sets=1):
     # sigma = [sigma for x in range(len(z_phot))]
-    plt.plot(z_phot, sigma, '*')
+    plt.plot(z_spec, sigma, '*')
     plt.ylabel("$1\sigma$ scatter around mean spec-z")
-    plt.xlabel("Photometric Redshift")
+    plt.xlabel("Spectroscopic Redshift")
     plt.show()
 
 
 def plot_bias(bias, z_spec, n_data_sets=1):
     plt.plot(z_spec, bias, '*')
+    plt.xlabel("Spectroscopic Redshift")
+    plt.ylabel("Bias")
     plt.show()
+
 
 def main():
     data = read_data()
@@ -39,7 +53,7 @@ def main():
 
     # print(z_spec)
 
-    sigma = one_sigma_scatter(z_phot, z_spec)
+    sigma = sigma_z(z_phot, z_spec)
     # print(sigma)
     plot_sig_photoz(sigma, z_phot)
 
