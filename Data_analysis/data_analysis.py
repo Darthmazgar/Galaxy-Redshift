@@ -39,6 +39,7 @@ def plot_sig_photoz(sigma, z_spec, n_data_sets=1):
 
 
 def plot_bias(bias, z_spec, n_data_sets=1):
+    # z_spec = [z_spec[i] if z_spec[i] != 0.999900E+01 else 0 for i in range(len(z_spec))]  # It is odd how much data == 0.999900E+01
     plt.plot(z_spec, bias, '*')
     plt.xlabel("Spectroscopic Redshift")
     plt.ylabel("Bias")
@@ -47,9 +48,11 @@ def plot_bias(bias, z_spec, n_data_sets=1):
 
 def main():
     data = read_data()
-    z_phot = np.log10(data[:, 1])  # for zphot.out
+    # z_phot = np.log10(data[:, 1])  # for zphot.out
+    z_phot = data[:, 1]
     # print(z_phot)
-    z_spec = np.log10(data[:, 22])
+    # z_spec = np.log10(data[:, 22])
+    z_spec = data[:, 22]
 
     # print(z_spec)
 
