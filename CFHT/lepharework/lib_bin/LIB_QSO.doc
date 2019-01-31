@@ -1,0 +1,41 @@
+CONFIG_FILE      ../config/zphot.para
+LIB_TYPE         Q
+LIB_FMT          A
+QSO_SED    /home/s1524154/Galaxy-Redshift/CFHT/lephare_dev/sed/QSO/QSO_MOD.list
+QSO_LIB    /home/s1524154/Galaxy-Redshift/CFHT/lepharework/lib_bin/LIB_QSO.bin
+QSO_WMAX       6982
+QSO_FSCALE 0.100000E+01
+NUMBER_SED     28
+MOD_000001        1   636    1 POLLETTA/Sey18_template_norm.sed
+MOD_000002        2  1021    1 POLLETTA/Sey2_template_norm.sed
+MOD_000003        3   661    1 POLLETTA/QSO1_template_norm.sed
+MOD_000004        4   661    1 POLLETTA/BQSO1_template_norm.sed
+MOD_000005        5   661    1 POLLETTA/TQSO1_template_norm.sed
+MOD_000006        6   665    1 POLLETTA/QSO2_template_norm.sed
+MOD_000007        7   661    1 POLLETTA/Torus_template_norm.sed
+MOD_000008        8   820    1 POLLETTA/Mrk231_template_norm.sed
+MOD_000009        9   781    1 POLLETTA/I19254_template_norm.sed
+MOD_000010       10   511    1 POLLETTA/N6240_template_norm.sed
+MOD_000011       11  3881    1 MARA/pl_hybrid_gal10_agn90.sed
+MOD_000012       12  3881    1 MARA/pl_hybrid_gal20_agn80.sed
+MOD_000013       13  3881    1 MARA/pl_hybrid_gal30_agn70.sed
+MOD_000014       14  1124    1 SYNTH/qso-0.25_84.sed
+MOD_000015       15  1124    1 SYNTH/qso-0.5_84.sed
+MOD_000016       16  1124    1 SYNTH/qso-0.75_84.sed
+MOD_000017       17  1124    1 SYNTH/qso-1.0_84.sed
+MOD_000018       18  1124    1 SYNTH/qso-1.25_84.sed
+MOD_000019       19  1180    1 VARIOUS/QSO_Cristiani.sed
+MOD_000020       20  6982    1 VARIOUS/QSO_SDSS.sed
+MOD_000021       21  6982    1 VARIOUS/QSO_SDSS_lum.sed
+MOD_000022       22  5950    1 VARIOUS/QSO_VVDS.sed
+MOD_000023       23    36    1 VARIOUS/MRR_QSO1.sed
+MOD_000024       24    36    1 VARIOUS/MRR_QSO2.sed
+MOD_000025       25    51    1 VARIOUS/Abel2690_75.sed
+MOD_000026       26    51    1 VARIOUS/BPM16274_69.sed
+MOD_000027       27   654    1 VARIOUS/IRAS09104_4109.sed
+MOD_000028       28    42    1 VARIOUS/NGC6240.sed
+CREATION_DATE Thu Jan 24 14:10:22 2019
+NUMBER_ROWS            56
+RECORD_LENGTH       55888
+NUMBER_LBDA            42
+NUMBER_AGE              1

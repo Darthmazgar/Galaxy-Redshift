@@ -1,0 +1,18 @@
+CONFIG_FILE      ../config/zphot.para
+LIB_TYPE         QSO
+LIB_NAME         LIB_QSO
+NUMBER_SED                28
+NUMBER_ROWS             4228
+RECORD_LENGTH            176
+FILTER_FILE        HDF.filt
+FILTERS            F300W  F450W  F606W  F814W  Jbb  H  K
+MAG_TYPE         AB   
+AB_COR              1.408   -0.064    0.105    0.427    0.900    1.371    1.891
+FLUX_COR            1.000    1.000    1.000    1.000    1.000    1.000    1.000
+Z_STEP             0.040   6.000   0.100
+COSMOLOGY         70.000   0.300   0.700
+EXTINC_LAW         calzetti.dat
+MOD_EXTINC        0      0
+EB_V              0.000  0.050  0.100  0.200  0.300
+EM_LINES         NO
+CREATION_DATE    Thu Jan 24 14:21:22 2019

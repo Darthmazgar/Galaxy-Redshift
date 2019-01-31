@@ -1,0 +1,25 @@
+CONFIG_FILE      ../config/zphot.para
+LIB_TYPE         G
+LIB_FMT          A
+GAL_SED    /home/s1524154/Galaxy-Redshift/CFHT/lephare_dev/sed/GAL/CWW_KINNEY/CWW_MOD.list
+GAL_LIB    /home/s1524154/Galaxy-Redshift/CFHT/lepharework/lib_bin/LIB_CWW.bin
+GAL_WMAX       2422
+GAL_FSCALE 0.100000E+01
+SEL_AGE    NONE
+AGE_RANGE    0.000000E+00 0.130000E+11
+NUMBER_SED     10
+MOD_000001        1   697    1 CWW_KINNEY/CWW_E_ext.sed
+MOD_000002        2   698    1 CWW_KINNEY/CWW_Sbc_ext.sed
+MOD_000003        3   698    1 CWW_KINNEY/CWW_Scd_ext.sed
+MOD_000004        4   701    1 CWW_KINNEY/CWW_Im_ext.sed
+MOD_000005        5  2422    1 CWW_KINNEY/KIN_SB1_ext.sed
+MOD_000006        6  2422    1 CWW_KINNEY/KIN_SB2_ext.sed
+MOD_000007        7  2422    1 CWW_KINNEY/KIN_SB3_ext.sed
+MOD_000008        8  2422    1 CWW_KINNEY/KIN_SB4_ext.sed
+MOD_000009        9  2422    1 CWW_KINNEY/KIN_SB5_ext.sed
+MOD_000010       10  2422    1 CWW_KINNEY/KIN_SB6_ext.sed
+CREATION_DATE Thu Jan 24 14:10:28 2019
+NUMBER_ROWS            20
+RECORD_LENGTH       19408
+NUMBER_LBDA          2422
+NUMBER_AGE              1
