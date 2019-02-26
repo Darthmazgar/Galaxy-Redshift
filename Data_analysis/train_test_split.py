@@ -29,5 +29,5 @@ test = x[hl :]
 # print(len(test))
 # print(len(x))
 
-np.savetxt("train_data.txt", train)
-np.savetxt("test_data.txt", test)
+np.savetxt("train_data.txt", train, fmt='%.6f', header='zs u g r i z u-g g-r r-i i-z eu eg er ei ez eu-g eg-r er-i ei-z')
+np.savetxt("test_data.txt", test, fmt='%.6f', header='zs u g r i z u-g g-r r-i i-z eu eg er ei ez eu-g eg-r er-i ei-z')

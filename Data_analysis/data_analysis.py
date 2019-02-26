@@ -12,6 +12,15 @@ def read_lephare_data(data='zphot.out'):  # zphot.out, 2SLAQ_Original.txt
     z_spec = (d[:, -1])
     return z_phot, z_spec
 
+def read_mlz_data(data='float_fmt'):
+    print("*************************************************")
+    print("Loading data ... \n")
+    d = np.genfromtxt(data)
+    print("Loaded.\n")
+    z_phot = (d[:, 2])  # for zphot.out
+    z_spec = (d[:, 0])
+    return z_phot, z_spec
+
 def f_stats(z_phot, z_spec):
     z_phot = bin_data_series(z_phot, bins=0, select_bins=True)
     z_spec = bin_data_series(z_spec, bins=0, select_bins=True)
@@ -55,12 +64,14 @@ def plot_sig_photoz(sigma, z_spec, n_data_sets=1):
     plt.xlabel("Spectroscopic Redshift")
     plt.show()
 
-def plot_densitymap(z_phot, z_spec, div_zero_rem=True, show=True, save=True):
+def plot_densitymap(z_phot, z_spec, div_zero_rem=True, show=True, save=True,
+                    name='Le PHARE'):
     fig = plt.figure()
     print("*************************************************")
     print("Plotting heatmap ... \n")
     # heatmap, xedges, yedges = np.histogram2d(z_spec, z_phot, bins=200)
-    heatmap, xedges, yedges, img = plt.hist2d(z_spec, z_phot, bins=100, range=[[0.25, 0.8], [0.25, 0.8]])
+    heatmap, xedges, yedges, img = plt.hist2d(z_spec, z_phot, bins=100,
+                                    range=[[0.25, 0.8], [0.25, 0.8]])
 
     h_copy = heatmap.copy()
     # extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
@@ -70,19 +81,20 @@ def plot_densitymap(z_phot, z_spec, div_zero_rem=True, show=True, save=True):
             for j in range(len(heatmap[i])):
                 if heatmap[i][j] == 0:
                     heatmap[i][j] = np.e
-    heatmap = -np.log(heatmap)
+    heatmap = np.log(heatmap)
 
     if show:
         fig.clear()
         y = np.linspace(0.26, 0.78, 10)
         x = y
         plt.plot(x, y, color=(0,0,0))
-        plt.imshow(heatmap.T, origin='lower', interpolation='gaussian', extent=extent) # extent=extent, origin='lower')
+        plt.imshow(heatmap.T, origin='lower', interpolation='gaussian',
+                    extent=extent) # extent=extent, origin='lower')
         plt.colorbar()
         plt.xlabel("Spectroscopic Redshift")
-        plt.ylabel("Le Phare Photo-z")
+        plt.ylabel("%s Photo-z" % name)
         if save:
-            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/heatmap.jpg')
+            plt.savefig(('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/%sheatmap.jpg' % (name)))
         plt.show()
     return h_copy, xedges, yedges
 
@@ -114,9 +126,7 @@ def bin_data_series(data, bin_len, name=False, select_bins=False):
             j += 1
         sum[j] += data[i, 0]
         count[j] += 1
-    # for k in range(len(avg)):
-    #     if count[k] != 0:
-    #         avg[k] = sum[k] / count[k]
+
     avg = sum / count
     std = np.zeros(len(avg))
     for i in range(len(std)):
@@ -138,13 +148,16 @@ def linspace_data_series(data, bins, name):
     bin = np.linspace(min(data), max(data), bins)
     return bin
 
-def plot_bias(zipped_bias, binned_bias, lin_space_z_spec, err=0, plot_raw=True, save=True):
+def plot_bias(zipped_bias, binned_bias, lin_space_z_spec, err=0, plot_raw=True,
+            save=True, name='Le PHARE'):
     col = (0,0,1)
     if plot_raw:
         plt.plot(zipped_bias[:,1], zipped_bias[:,0], '*', label='Raw data')
         col = (1,0,0)
-    plt.plot(lin_space_z_spec[1:-2], binned_bias[1:-1], color=col, linewidth=2, label='Binned average data')
-    # plt.errorbar(lin_space_z_spec[1:-2], binned_bias[1:-1], color=col, linewidth=2, yerr=err[1:-1], label='Binned average data')
+    plt.plot(lin_space_z_spec[1:-2], binned_bias[1:-1], color=col, linewidth=2,
+            label='Binned average data')
+    # plt.errorbar(lin_space_z_spec[1:-2], binned_bias[1:-1], color=col,
+    #            linewidth=2, yerr=err[1:-1], label='Binned average data')
     if plot_raw:
         plt.legend()
     # plt.title('Bias vs spectrascopic redshift')
@@ -152,18 +165,23 @@ def plot_bias(zipped_bias, binned_bias, lin_space_z_spec, err=0, plot_raw=True, 
     plt.ylabel('Bias')
     if save:
         if plot_raw:
-            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/z-phot-bias%s.jpg' % 'w-raw')
+            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/%sz-phot-bias%s.jpg'
+              % (name, 'w-raw'))
         else:
-            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/z-phot-bias.jpg')
+            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/%sz-phot-bias.jpg'
+              % name)
     plt.show()
 
-def plot_sigma(zipped_sigma, binned_sigma, lin_space_z_spec, i, err=0, plot_raw=True, save=True):
+def plot_sigma(zipped_sigma, binned_sigma, lin_space_z_spec, i, err=0,
+                plot_raw=True, save=True, name='Le PHARE'):
     col = (0,0,1)
     if plot_raw:
         plt.plot(zipped_sigma[:,1], zipped_sigma[:,0], '*', label='Raw data')
         col = (1,0,0)
-    plt.plot(lin_space_z_spec[1:-2], binned_sigma[1:-1], color=col, linewidth=2, label='Binned average data')
-    # plt.errorbar(lin_space_z_spec[1:-2], binned_sigma[1:-1], color=col, linewidth=2, yerr=err[1:-1], label='Binned average data')
+    plt.plot(lin_space_z_spec[1:-2], binned_sigma[1:-1], color=col, linewidth=2,
+            label='Binned average data')
+    # plt.errorbar(lin_space_z_spec[1:-2], binned_sigma[1:-1], color=col,
+    #               linewidth=2, yerr=err[1:-1], label='Binned average data')
     if plot_raw:
         plt.legend()
     # plt.title('$%d\sigma$ scatter vs spectrascopic redshift' % i)
@@ -171,56 +189,67 @@ def plot_sigma(zipped_sigma, binned_sigma, lin_space_z_spec, i, err=0, plot_raw=
     plt.ylabel('%d$\sigma$ scatter around photo-z' % i)
     if save:
         if plot_raw:
-            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/scatter-about-photo-z%s.jpg' % 'w-raw')
+            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/%sscatter-about-photo-z%s.jpg' % (name,'w-raw'))
         else:
-            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/scatter-about-photo-z.jpg')
+            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/%sscatter-about-photo-z.jpg' % name)
     plt.show()
 
-def plot_sigma_mean(zipped_sigma, binned_sigma, lin_space_z_spec, i, err=0, plot_raw=True, save=True):
+def plot_sigma_mean(zipped_sigma, binned_sigma, lin_space_z_spec, i, err=0,
+                    plot_raw=True, save=True, name='Le PHARE'):
     col = (0,0,1)
     if plot_raw:
         plt.plot(zipped_sigma[:,1], zipped_sigma[:,0], '*', label='Raw data')
         col=(1,0,0)
-    plt.plot(lin_space_z_spec[1:-2], binned_sigma[1:-1], color=col, linewidth=2, label='Binned average data')
-    # plt.errorbar(lin_space_z_spec[1:-2], binned_sigma[1:-1], color=col, linewidth=2, yerr=err[1:-1], label='Binned average data')
+    plt.plot(lin_space_z_spec[1:-2], binned_sigma[1:-1], color=col, linewidth=2,
+            label='Binned average data')
+    # plt.errorbar(lin_space_z_spec[1:-2], binned_sigma[1:-1], color=col,
+    #                linewidth=2, yerr=err[1:-1], label='Binned average data')
     if plot_raw:
         plt.legend()
-    # plt.title('$%d\sigma$ scatter around the mean photo-z vs spectrascopic redshift' % i)
+    # plt.title('$%d\sigma$ scatter around the mean photo-z vs spectrascopic\
+    #            redshift' % i)
     plt.xlabel('Spectrascopic redshift')
     plt.ylabel('%d$\sigma$ scatter around mean photo-z' % i)
     if save:
         if plot_raw:
-            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/photo-z-scatter-around-mean%s.jpg' % 'w-raw')
+            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/%sphoto-z-scatter-around-mean%s.jpg' % (name,'w-raw'))
         else:
-            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/photo-z-scatter-around-mean.jpg')
+            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/%sphoto-z-scatter-around-mean.jpg' % name)
     plt.show()
 
-def plot_sigma_spec(zipped_sigma, binned_sigma, lin_space_z_spec, i, err=0, plot_raw=True, save=True):
+def plot_sigma_spec(zipped_sigma, binned_sigma, lin_space_z_spec, i, err=0,
+                    plot_raw=True, save=True, name='Le PHARE'):
     col=(0,0,1)
     if plot_raw:
         plt.plot(zipped_sigma[:,1], zipped_sigma[:,0], '*', label='Raw data')
         col=(1,0,0)
-    plt.plot(lin_space_z_spec[1:-2], binned_sigma[1:-1], color=col, linewidth=2, label='Binned average data')
-    # plt.errorbar(lin_space_z_spec[1:-2], binned_sigma[1:-1], color=col, linewidth=2, yerr=err[1:-1], label='Binned average data')
+    plt.plot(lin_space_z_spec[1:-2], binned_sigma[1:-1], color=col, linewidth=2,
+            label='Binned average data')
+    # plt.errorbar(lin_space_z_spec[1:-2], binned_sigma[1:-1], color=col,
+    #                linewidth=2, yerr=err[1:-1], label='Binned average data')
     if plot_raw:
         plt.legend()
-    # plt.title('$%d\sigma$ scatter around the mean spec-z vs spectrascopic redshift' % i)
+    # plt.title('$%d\sigma$ scatter around the mean spec-z vs spectrascopic\
+    #            redshift' % i)
     plt.xlabel('Photometric redshift')
     plt.ylabel('%d$\sigma$ scatter around mean spec-z' % i)
     if save:
         if plot_raw:
-            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/z-spec-scatter-%s.jpg' % 'w-raw')
+            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/sz-spec-scatter-%s.jpg' % (name,'w-raw'))
         else:
-            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/z-spec-scatter.jpg')
+            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/%sz-spec-scatter.jpg' % name)
     plt.show()
 
-def plot_bias_spec(zipped_bias, binned_bias, lin_space_z_spec, err=0, plot_raw=True ,save=True):
+def plot_bias_spec(zipped_bias, binned_bias, lin_space_z_spec, err=0,
+                    plot_raw=True ,save=True, name='Le PHARE'):
     col = (0,0,1)
     if plot_raw:
         plt.plot(zipped_bias[:,1], zipped_bias[:,0], '*', label='Raw data')
         col = (1,0,0)
-    plt.plot(lin_space_z_spec[1:-2], binned_bias[1:-1], color=col, linewidth=2, label='Binned average data')
-    # plt.errorbar(lin_space_z_spec[1:-2], binned_bias[1:-1], color=col, linewidth=2, yerr=err[1:-1], label='Binned average data')
+    plt.plot(lin_space_z_spec[1:-2], binned_bias[1:-1], color=col, linewidth=2,
+            label='Binned average data')
+    # plt.errorbar(lin_space_z_spec[1:-2], binned_bias[1:-1], color=col,
+    #                linewidth=2, yerr=err[1:-1], label='Binned average data')
     if plot_raw:
         plt.legend()
     # plt.title('Bias vs spectrascopic redshift')
@@ -228,56 +257,70 @@ def plot_bias_spec(zipped_bias, binned_bias, lin_space_z_spec, err=0, plot_raw=T
     plt.ylabel('Bias')
     if save:
         if plot_raw:
-            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/spec-bias%s.jpg' % 'w-raw')
+            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/%sspec-bias%s.jpg'
+              % (name, 'w-raw'))
         else:
-            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/spec-bias.jpg')
+            plt.savefig('C:/Users/iainm/OneDrive/Uni 2018-19/Senior Honours Project/Galaxy-Redshift/Data_analysis/Images/%sspec-bias.jpg'
+              % name)
     plt.show()
 
 
 def main():
     BIN_LENGTH = 28
     SHOW_RAW = False
-    SAVE_IMG = False
+    SAVE_IMG = True
+    n1 = 'Le PHARE'
+    n2 = 'MLZ'
+    NAME_USED = n1
     z_phot, z_spec = read_lephare_data()
+    # z_phot, z_spec = read_mlz_data()
 
     z_spec, z_phot = remove_erronious_data(z_spec, z_phot, len(z_phot))
 
     # Plot the density map of z-spec vs z-phot
-    heatmap, xedges, yedges = plot_densitymap(z_phot, z_spec, save=SAVE_IMG)
+    heatmap, xedges, yedges = plot_densitymap(z_phot, z_spec, save=SAVE_IMG,
+                                            name=NAME_USED)
 
-    # # Create x-axis linearly spaced for plots.
-    # lin_space_z_spec = linspace_data_series(z_spec, BIN_LENGTH+1, 'z_zpec')
-    # lin_space_z_phot = linspace_data_series(z_phot, BIN_LENGTH+1, 'z_phot')
-    #
-    # # Calculate and plot the bias.
-    # b = bias(z_phot, z_spec)
-    # zipped_bias = zip_data(b, z_spec)
-    # binned_bias, std = bin_data_series(zipped_bias, BIN_LENGTH, 'Bias')
-    # plot_bias(zipped_bias, binned_bias, lin_space_z_spec, err=std, plot_raw=SHOW_RAW, save=SAVE_IMG)
-    #
-    # # Calculate and plot the 1 sigma scatter about z-spec
-    # sigma = sigma_z(z_phot, z_spec)
-    # zipped_sigma = zip_data(sigma, z_spec)
-    # binned_sigma, std_sigma = bin_data_series(zipped_sigma, BIN_LENGTH, 'Sigma')
-    # plot_sigma(zipped_sigma, binned_sigma, lin_space_z_spec, 1, err=std_sigma, plot_raw=SHOW_RAW, save=SAVE_IMG)
-    #
-    # # Calculate and plot the 1 sigma scatter about the mean z-phot
-    # sigma2 = sigma_z2(z_phot)
-    # zipped_sigma2 = zip_data(sigma2, z_spec)
-    # binned_sigma2, std_s2 = bin_data_series(zipped_sigma2, BIN_LENGTH, 'Sigma2')
-    # plot_sigma_mean(zipped_sigma2, binned_sigma2, lin_space_z_spec, 1, err=std_s2, plot_raw=SHOW_RAW, save=SAVE_IMG)
-    #
-    # # Calculate and plot the 1 sigma scatter about the mean z-spec
-    # sigma3 = sigma_z3(z_spec)
-    # zipped_sigma3 = zip_data(sigma3, z_phot)
-    # binned_sigma3, std_s3 = bin_data_series(zipped_sigma3, BIN_LENGTH, 'Sigma3')
-    # plot_sigma_spec(zipped_sigma3, binned_sigma3, lin_space_z_spec, 1, err=std_s3, plot_raw=SHOW_RAW, save=SAVE_IMG)
-    #
-    # # Calculate and plot the bias for z-spec.
-    # b_spec = bias(z_spec, z_phot)
-    # zipped_bias_spec = zip_data(b_spec, z_phot)
-    # binned_bias_spec, std_spec = bin_data_series(zipped_bias_spec, BIN_LENGTH, 'Bias spec')
-    # plot_bias_spec(zipped_bias_spec, binned_bias_spec, lin_space_z_spec, err=std_spec, plot_raw=SHOW_RAW, save=SAVE_IMG)
+    # Create x-axis linearly spaced for plots.
+    lin_space_z_spec = linspace_data_series(z_spec, BIN_LENGTH+1, 'z_zpec')
+    lin_space_z_phot = linspace_data_series(z_phot, BIN_LENGTH+1, 'z_phot')
+
+    # Calculate and plot the bias.
+    b = bias(z_phot, z_spec)
+    zipped_bias = zip_data(b, z_spec)
+    binned_bias, std = bin_data_series(zipped_bias, BIN_LENGTH, 'Bias')
+    plot_bias(zipped_bias, binned_bias, lin_space_z_spec, err=std,
+                plot_raw=SHOW_RAW, save=SAVE_IMG, name=NAME_USED)
+
+    # Calculate and plot the 1 sigma scatter about z-spec
+    sigma = sigma_z(z_phot, z_spec)
+    zipped_sigma = zip_data(sigma, z_spec)
+    binned_sigma, std_sigma = bin_data_series(zipped_sigma, BIN_LENGTH, 'Sigma')
+    plot_sigma(zipped_sigma, binned_sigma, lin_space_z_spec, 1, err=std_sigma,
+                plot_raw=SHOW_RAW, save=SAVE_IMG, name=NAME_USED)
+
+    # Calculate and plot the 1 sigma scatter about the mean z-phot
+    sigma2 = sigma_z2(z_phot)
+    zipped_sigma2 = zip_data(sigma2, z_spec)
+    binned_sigma2, std_s2 = bin_data_series(zipped_sigma2, BIN_LENGTH, 'Sigma2')
+    plot_sigma_mean(zipped_sigma2, binned_sigma2, lin_space_z_spec, 1,
+                err=std_s2, plot_raw=SHOW_RAW, save=SAVE_IMG, name=NAME_USED)
+
+    # Calculate and plot the 1 sigma scatter about the mean z-spec
+    sigma3 = sigma_z3(z_spec)
+    zipped_sigma3 = zip_data(sigma3, z_phot)
+    binned_sigma3, std_s3 = bin_data_series(zipped_sigma3, BIN_LENGTH,
+                                            'Sigma3')
+    plot_sigma_spec(zipped_sigma3, binned_sigma3, lin_space_z_spec, 1,
+                err=std_s3, plot_raw=SHOW_RAW, save=SAVE_IMG, name=NAME_USED)
+
+    # Calculate and plot the bias for z-spec.
+    b_spec = bias(z_spec, z_phot)
+    zipped_bias_spec = zip_data(b_spec, z_phot)
+    binned_bias_spec, std_spec = bin_data_series(zipped_bias_spec, BIN_LENGTH,
+                                                'Bias spec')
+    plot_bias_spec(zipped_bias_spec, binned_bias_spec, lin_space_z_spec,
+                err=std_spec, plot_raw=SHOW_RAW, save=SAVE_IMG, name=NAME_USED)
 
 
     # f_stats(z_phot, z_spec)
